@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>香港主題環保麻雀 - 手動360度互動展示</title>
+    <style>
+        body { 
+            margin: 0; padding: 0; background-color: #2c3e50; font-family: sans-serif; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center; 
+            min-height: 100vh; overflow: hidden; color: white;
+        }
+        .container { text-align: center; width: 100%; pointer-events: none; }
+        h1 { margin-bottom: 5px; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); pointer-events: auto; }
+        p.subtitle { color: #bdc3c7; margin-bottom: 40px; pointer-events: auto; }
+        
+        /* 3D 舞台與觸控設定 */
+        .scene {
+            width: 90%;
+            max-width: 600px;
+            margin: 0 auto;
+            perspective: 1200px;
+            /* touch-action: none 非常重要！防止手指滑動時網頁跟著上下滾動 */
+            touch-action: none; 
+            cursor: grab;
+            pointer-events: auto;
+        }
+        .scene:active { cursor: grabbing; }
+
+        .art-wrapper {
+            width: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            /* 預設稍微傾斜，讓用戶一看就知道是立體的 */
+            transform: rotateX(10deg) rotateY(-15deg);
+        }
+
+        .art-image-container { 
+            position: relative; width: 100%; border-radius: 10px; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
+            backface-visibility: visible; 
+            /* 防止選取圖片導致卡頓 */
+            user-select: none;
+            -webkit-user-drag: none; 
+        }
+        .art-image-container img { width: 100%; height: auto; display: block; border-radius: 10px; pointer-events: none; }
+        
+        /* 光點設計 (跟著圖片一起轉) */
+        .hotspot { 
+            position: absolute; width: 26px; height: 26px; 
+            background-color: rgba(255, 255, 255, 0.9); border: 3px solid #e74c3c; 
+            border-radius: 50%; cursor: pointer; transform: translate(-50%, -50%) translateZ(30px); 
+            box-shadow: 0 0 15px rgba(231, 76, 60, 0.8); animation: pulse 1.5s infinite; 
+            pointer-events: auto; /* 確保光點可以被點擊 */
+        }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.8); } 70% { box-shadow: 0 0 0 15px rgba(231, 76, 60, 0); } 100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); } }
+        
+        /* 彈出文字框設計 */
+        .info-panel { 
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95); padding: 20px; border-radius: 12px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 85%; max-width: 400px; 
+            text-align: left; display: none; z-index: 100; border-top: 5px solid #e74c3c; color: #333;
+            pointer-events: auto;
+        }
+        .info-title { font-weight: bold; font-size: 1.2em; color: #e74c3c; margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+        .info-desc { font-size: 0.95em; line-height: 1.6; }
+        .close-btn { position: absolute; top: 10px; right: 15px; cursor: pointer; color: #999; font-weight: bold; font-size: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>麻雀經典：環保藝展</h1>
+        <p class="subtitle">👉 <b>用手指滑動來旋轉圖片</b>，點擊紅點查看材質。</p>
+    </div>
+        
+    <div class="scene" id="scene">
+        <div class="art-wrapper" id="artWrapper">
+            <div class="art-image-container">
+                <img src="mahjong-art.jpg" alt="環保麻雀藝術品">
+                <div class="hotspot" style="top: 50%; left: 50%;" onclick="showInfo(event, '中間：打出的麻雀', '牌身採用【高壓再生紙板】製作，表面鑲嵌從香港海灘回收並經過拋光處理的【海玻璃 (Sea Glass)】，取代傳統的塑料。')"></div>
+                <div class="hotspot" style="top: 18%; left: 50%;" onclick="showInfo(event, '頂部：麻雀牌牆', '由100%【回收紙箱與報紙】攪碎壓製而成的紙皮磚，呈現自然的土褐色澤，堅固且完全可生物降解。')"></div>
+                <div class="hotspot" style="top: 88%; left: 50%;" onclick="showInfo(event, '底部：麻雀花紋刺繡', '牌面上的「萬、筒、索」及字體，摒棄了化學顏料，改用【升級再造的舊衣物彩色羊毛線】一針一線手工編織而成，保留復古工藝感。')"></div>
+                <div class="hotspot" style="top: 89%; left: 88%;" onclick="showInfo(event, '右下：微型點心', '點心籠及包點模型使用【再生紙漿 (Papier-mâché)】捏製，純天然無毒，體現香港飲茶文化與環保的完美結合。')"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="info-panel" id="infoPanel">
+        <div class="close-btn" onclick="closeInfo()">✕</div>
+        <div class="info-title" id="infoTitle">標題</div>
+        <div class="info-desc" id="infoDesc">內容</div>
+    </div>
+
+    <script>
+        // 彈出視窗功能
+        function showInfo(event, title, desc) {
+            event.stopPropagation(); // 防止點擊光點時觸發拖曳旋轉
+            document.getElementById('infoTitle').innerText = title;
+            document.getElementById('infoDesc').innerText = desc;
+            document.getElementById('infoPanel').style.display = 'block';
+        }
+        function closeInfo() {
+            document.getElementById('infoPanel').style.display = 'none';
+        }
+
+        // 3D 手動旋轉控制 (支援手機觸控與電腦滑鼠)
+        const scene = document.getElementById('scene');
+        const wrapper = document.getElementById('artWrapper');
+        
+        let isDragging = false;
+        let previousX = 0;
+        let previousY = 0;
+        let currentRotationX = 10;   // 預設X軸角度
+        let currentRotationY = -15;  // 預設Y軸角度
+
+        scene.addEventListener('pointerdown', (e) => {
+            isDragging = true;
+            previousX = e.clientX;
+            previousY = e.clientY;
+        });
+
+        scene.addEventListener('pointermove', (e) => {
+            if (!isDragging) return;
+            
+            // 計算滑動的距離
+            const deltaX = e.clientX - previousX;
+            const deltaY = e.clientY - previousY;
+
+            // 調整旋轉靈敏度 (數字越小轉得越慢)
+            currentRotationY += deltaX * 0.5; 
+            currentRotationX -= deltaY * 0.5; 
+
+            // 限制上下翻轉的角度，避免整個翻過去太奇怪 (-40度 到 40度之間)
+            currentRotationX = Math.max(-40, Math.min(40, currentRotationX));
+
+            // 套用旋轉效果
+            wrapper.style.transform = `rotateX(${currentRotationX}deg) rotateY(${currentRotationY}deg)`;
+
+            previousX = e.clientX;
+            previousY = e.clientY;
+        });
+
+        // 當手指/滑鼠放開或離開範圍時，停止旋轉
+        scene.addEventListener('pointerup', () => { isDragging = false; });
+        scene.addEventListener('pointerleave', () => { isDragging = false; });
+        scene.addEventListener('pointercancel', () => { isDragging = false; });
+    </script>
+</body>
+</html>
